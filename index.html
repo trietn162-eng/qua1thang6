@@ -3,18 +3,108 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tống Trần Kiên tặng quà 1/6 nè 💖</title>
-  <link rel="stylesheet" href="style.css">
+  <title>Thiệp 1/6 tặng bé iu 💖</title>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      text-align: center;
+      background-color: #fffbe7;
+      margin: 0;
+      padding: 0;
+    }
+    .gift-image {
+      width: 200px;
+      height: auto;
+      margin-top: 100px;
+      cursor: pointer;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+    .card {
+      margin-top: 50px;
+      padding: 20px;
+      background: #fff;
+      border-radius: 20px;
+      display: inline-block;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      max-width: 600px;
+      overflow: visible;
+      min-height: 300px;
+    }
+    .gif {
+      width: 200px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+    }
+    #loveMsg {
+      font-size: 18px;
+      color: #ff4081;
+      line-height: 1.5;
+      white-space: pre-line;
+    }
+    #fromTag {
+      display: block !important;
+      opacity: 1 !important;
+      color: #000000 !important;
+      font-size: 1.2em;
+      margin-top: 20px;
+      text-align: center;
+      position: relative;
+      z-index: 10;
+      transition: opacity 1s ease;
+    }
+    #loveStage {
+      margin-top: 50px;
+      padding: 20px;
+      display: none;
+      transition: opacity 1s ease;
+    }
+    #loveStage.hidden {
+      opacity: 0;
+    }
+    #lovePrompt {
+      font-size: 20px;
+      color: #ff4081;
+      margin-bottom: 20px;
+    }
+    #loveIcons {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+    }
+    .love-icon {
+      font-size: 40px;
+      cursor: pointer;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+    }
+    .love-icon.tapped {
+      opacity: 0.7;
+      transform: scale(1.2);
+      animation: sparkle 0.5s ease;
+    }
+    @keyframes sparkle {
+      0% { transform: scale(1.2); }
+      50% { transform: scale(1.4); text-shadow: 0 0 10px #ff4081, 0 0 20px #ff4081; }
+      100% { transform: scale(1.2); }
+    }
+  </style>
 </head>
 <body>
+
   <div id="startStage">
-    <img src="giftbox.png" alt="Hộp quà" class="gift-image" onclick="startApp()" />
+    <img src="https://raw.githubusercontent.com/tongtrankien1605/qua1thang6/main/giftbox.png" alt="Hộp quà" class="gift-image" onclick="startApp()" />
     <p>Nhấn vào hộp quà để mở điều bất ngờ!</p>
   </div>
+
   <div id="inputStage" style="display:none;"></div>
+
   <div id="loveStage" style="display:none;">
-    <p id="lovePrompt">Chạm đủ 4 love ❤️ để nhận  quà từ TongTranKien nè</p>
+    <p id="lovePrompt">Chạm đủ 4 love ❤️ để nhận combo quà từ Triết nè</p>
     <div id="loveIcons">
       <span class="love-icon" onclick="tapLove(1)">❤️</span>
       <span class="love-icon" onclick="tapLove(2)">❤️</span>
@@ -22,15 +112,131 @@
       <span class="love-icon" onclick="tapLove(4)">❤️</span>
     </div>
   </div>
+
   <div id="cardStage" style="display:none;">
     <div class="card">
-      <img src="cute.gif" alt="Cute gif" class="gif" />
+      <img src="https://raw.githubusercontent.com/tongtrankien1605/qua1thang6/main/cute.gif" alt="Cute gif" class="gif" />
       <p id="loveMsg"></p>
     </div>
   </div>
-  <audio id="bgMusic" src="https://raw.githubusercontent.com/tongtrankien1605/tongtrankien1605/main/global/audio/phoncert.mp3" loop></audio>
-  
 
-  <script src="script.js"></script>
+  <audio id="bgMusic" src="https://raw.githubusercontent.com/tongtrankien1605/music/main/phoncert.mp3" loop></audio>
+
+  <script>
+    const loveTaps = new Set();
+    let userName = '';
+
+    function startApp() {
+      const stageIds = ['cardStage', 'startStage', 'inputStage', 'loveStage'];
+      const stages = Object.fromEntries(stageIds.map(id => [id, document.getElementById(id)]));
+      if (Object.values(stages).some(stage => !stage)) {
+        console.error('Thiếu một trong các element stage!');
+        return;
+      }
+      stages.startStage.style.display = 'none';
+      stages.inputStage.style.display = 'block';
+      stages.loveStage.style.display = 'none';
+      stages.cardStage.style.display = 'none';
+      document.getElementById('bgMusic')?.play().catch(err =>
+        console.warn('Không thể phát nhạc:', err)
+      );
+      inipesan();
+    }
+
+    typeWriterEffect = (text, elementId, callback) => {
+      const element = document.getElementById(elementId);
+      if (!element) return;
+      let i = 0;
+      const speed = 50;
+      element.textContent = '';
+      const type = () => {
+        if (i < text.length) {
+          element.textContent += text.charAt(i);
+          i++;
+          setTimeout(type, speed);
+        } else {
+          callback?.();
+        }
+      };
+      type();
+    };
+
+    function switchStage(fromId, toId, withFade = false) {
+      const fromElement = document.getElementById(fromId);
+      const toElement = document.getElementById(toId);
+      if (!fromElement || !toElement) return;
+      if (withFade) {
+        fromElement.classList.add('hidden');
+        setTimeout(() => {
+          fromElement.style.display = 'none';
+          toElement.style.display = 'block';
+        }, 1000);
+      } else {
+        fromElement.style.display = 'none';
+        toElement.style.display = 'block';
+      }
+    }
+
+    function tapLove(id) {
+      if (loveTaps.has(id)) return;
+      const loveIcon = document.querySelector(`#loveIcons .love-icon:nth-child(${id})`);
+      loveIcon.classList.add('tapped');
+      loveTaps.add(id);
+      
+      if (loveTaps.size === 4) {
+        Swal.fire({
+          title: 'Đủ 4 love rồi nè!',
+          text: 'Sẵn sàng nhận quà chưa? 💖',
+          timer: 1500,
+          showConfirmButton: false,
+          background: '#fffbe7'
+        }).then(() => {
+          switchStage('loveStage', 'cardStage', true);
+          const loveMsg = document.getElementById('loveMsg');
+          if (!loveMsg) return;
+          
+          typeWriterEffect(
+            `Chúc \${userName} một ngày 1/6 thật thật là vui vẻ và ngập tràn niềm vui nhớ! Dù tụi mình lớn thế nào thì hôm nay vẫn xứng đáng được nhận quà và chiều chuộng hết nấc nèee. Mã giảm giá 100k Shopee: IZEX3105BVAQTQZ5XS! 👑💘`,
+            'loveMsg',
+            () => {
+              const fromTag = document.createElement("div");
+              fromTag.id = 'fromTag';
+              fromTag.textContent = "From: Triết with love"; 
+              loveMsg.appendChild(fromTag);
+            }
+          );
+        });
+      }
+    }
+
+    async function inipesan() {
+      const { value: typedName } = await Swal.fire({
+        title: 'Nhập tên của cậu vào đây đi:',
+        input: 'text',
+        inputValue: '',
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        showConfirmButton: true,
+        didOpen: () => Swal.getInput()?.focus(),
+        preConfirm: () => Swal.getInput()?.value?.trim()
+      });
+      
+      if (typedName) {
+        userName = typedName;
+        loveTaps.clear();
+        document.querySelectorAll('.love-icon').forEach(icon =>
+          icon.classList.remove('tapped')
+        );
+        switchStage('inputStage', 'loveStage');
+      } else {
+        await Swal.fire({
+          icon: 'warning',
+          title: 'Tên không được để trống đâu nha!',
+          confirmButtonText: 'Nhập lại'
+        });
+        inipesan();
+      }
+    }
+  </script>
 </body>
 </html>
